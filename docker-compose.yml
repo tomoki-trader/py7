@@ -1,0 +1,38 @@
+version: '3.9'
+services:
+    py4:
+     user: $UID:$GID
+
+     build: 
+       context: .
+       dockerfile: ./Dockerfile
+       args:
+         UID: $UID
+         GID: $GID
+         UNAME: $UNAME
+         SERVICE: $SERVICE
+
+     ports:
+      - "8888:8888"
+
+     volumes:
+      - "/home/${UNAME}/${SERVICE}/data:/workspace/working"
+      - "/home/${UNAME}/.jupyter/:/home/${UNAME}/.jupyter"
+     
+     container_name: ${SERVICE}
+
+     env_file: my_env_file.env
+
+     tty: true
+     
+
+     command: >
+      jupyter notebook --no-browser --ip=0.0.0.0 --notebook-dir=/workspace/working --allow-root --NotebookApp.token=''
+    
+     deploy:
+      resources:
+        reservations:
+         devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
